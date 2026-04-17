@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\OpsCenterIncidentManagement.Contracts\OpsCenterIncidentManagement.Contracts.csproj" />
+    <ProjectReference Include="..\OpsCenterIncidentManagement.Application\OpsCenterIncidentManagement.Application.csproj" />
     <ProjectReference Include="..\OpsCenterIncidentManagement.Domain\OpsCenterIncidentManagement.Domain.csproj" />
   </ItemGroup>
 
