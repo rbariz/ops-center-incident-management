@@ -22,7 +22,7 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
         }
@@ -32,7 +32,7 @@
             border: 1px solid #e2e8f0;
             border-radius: 14px;
             padding: 16px;
-            box-shadow: 0 8px 24px rgba(15,23,42,.06);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
         }
 
         .label {
@@ -52,6 +52,8 @@
             border-collapse: collapse;
             background: white;
             border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            overflow: hidden;
         }
 
         th, td {
@@ -115,6 +117,11 @@
             font-weight: 700;
         }
 
+        .cancelled {
+            color: #7c2d12;
+            font-weight: 700;
+        }
+
         .critical {
             color: #991b1b;
             font-weight: 700;
@@ -148,13 +155,8 @@
 </head>
 <body>
     <h1>Ops Center Dashboard</h1>
-    <div class="muted">Minimal demo for incidents, escalation evaluation, and timeline visibility.</div>
+    <div class="muted">Minimal demo for incidents, escalation evaluation, and workflow actions.</div>
 
-    <!--<div class="toolbar">
-        <button onclick="loadDashboard()">Refresh</button>
-        <a id="timelineLink" class="btn btn-secondary" href="#" target="_blank">Open Demo Timeline</a>
-        <div id="lastRefresh" class="muted">Last refresh: -</div>
-    </div>-->
     <div class="toolbar">
         <button onclick="loadDashboard()">Refresh</button>
         <a id="timelineLink" class="btn btn-secondary" href="#" target="_blank">Open Demo Timeline</a>
@@ -167,10 +169,12 @@
             <div class="label">Demo Incident</div>
             <div id="incidentId" class="value" style="font-size:16px">-</div>
         </div>
+
         <div class="card">
             <div class="label">Total Incidents</div>
             <div id="totalIncidents" class="value">0</div>
         </div>
+
         <div class="card">
             <div class="label">Escalated Incidents</div>
             <div id="escalatedIncidents" class="value">0</div>
@@ -213,10 +217,30 @@
             rows.innerHTML = '';
 
             for (const item of data.latestIncidents) {
-                const evaluateButton =
-                    (item.status !== 'resolved' && item.status !== 'closed' && item.status !== 'cancelled')
-                        ? `<button onclick="evaluateEscalation('${item.id}')">Evaluate Escalation</button>`
+                const assignButton =
+                    item.status === 'created' || item.status === 'escalated'
+                        ? `<button onclick="assignIncident('${item.id}')">Assign</button>`
                         : '';
+
+                const startButton =
+                    item.status === 'assigned'
+                        ? `<button onclick="startIncident('${item.id}')">Start</button>`
+                        : '';
+
+                const resolveButton =
+                    item.status === 'assigned' || item.status === 'inprogress' || item.status === 'escalated'
+                        ? `<button onclick="resolveIncident('${item.id}')">Resolve</button>`
+                        : '';
+
+                const evaluateButton =
+                    item.status !== 'resolved' &&
+                        item.status !== 'closed' &&
+                        item.status !== 'cancelled'
+                        ? `<button class="btn-secondary" onclick="evaluateEscalation('${item.id}')">Evaluate Escalation</button>`
+                        : '';
+
+                const summaryButton =
+                    `<a class="btn btn-secondary" href="/api/incidents/${item.id}/summary" target="_blank">Summary</a>`;
 
                 const timelineButton =
                     `<a class="btn btn-secondary" href="/api/incidents/${item.id}/timeline" target="_blank">Timeline</a>`;
@@ -230,7 +254,11 @@
                         <td class="${item.status}">${item.status}</td>
                         <td>
                             <div class="action-group">
+                                ${assignButton}
+                                ${startButton}
+                                ${resolveButton}
                                 ${evaluateButton}
+                                ${summaryButton}
                                 ${timelineButton}
                             </div>
                         </td>
@@ -244,6 +272,21 @@
 
         async function evaluateEscalation(incidentId) {
             await fetch(`/api/incidents/${incidentId}/evaluate-escalation`, { method: 'POST' });
+            await loadDashboard();
+        }
+
+        async function assignIncident(incidentId) {
+            await fetch(`/api/incidents/${incidentId}/assign`, { method: 'POST' });
+            await loadDashboard();
+        }
+
+        async function startIncident(incidentId) {
+            await fetch(`/api/incidents/${incidentId}/start`, { method: 'POST' });
+            await loadDashboard();
+        }
+
+        async function resolveIncident(incidentId) {
+            await fetch(`/api/incidents/${incidentId}/resolve`, { method: 'POST' });
             await loadDashboard();
         }
 
