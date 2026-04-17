@@ -150,9 +150,15 @@
     <h1>Ops Center Dashboard</h1>
     <div class="muted">Minimal demo for incidents, escalation evaluation, and timeline visibility.</div>
 
+    <!--<div class="toolbar">
+        <button onclick="loadDashboard()">Refresh</button>
+        <a id="timelineLink" class="btn btn-secondary" href="#" target="_blank">Open Demo Timeline</a>
+        <div id="lastRefresh" class="muted">Last refresh: -</div>
+    </div>-->
     <div class="toolbar">
         <button onclick="loadDashboard()">Refresh</button>
         <a id="timelineLink" class="btn btn-secondary" href="#" target="_blank">Open Demo Timeline</a>
+        <a id="summaryLink" class="btn btn-secondary" href="#" target="_blank">Open Demo Summary</a>
         <div id="lastRefresh" class="muted">Last refresh: -</div>
     </div>
 
@@ -201,6 +207,7 @@
             document.getElementById('totalIncidents').textContent = data.totalIncidents;
             document.getElementById('escalatedIncidents').textContent = data.escalatedIncidents;
             document.getElementById('timelineLink').href = `/api/incidents/${demoIncidentId}/timeline`;
+            document.getElementById('summaryLink').href = `/api/incidents/${demoIncidentId}/summary`;
 
             const rows = document.getElementById('incidentRows');
             rows.innerHTML = '';
@@ -216,18 +223,18 @@
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${new Date(item.createdAtUtc).toLocaleString()}</td>
-                    <td>${item.title}</td>
-                    <td>${item.location}</td>
-                    <td class="${item.priority}">${item.priority}</td>
-                    <td class="${item.status}">${item.status}</td>
-                    <td>
-                        <div class="action-group">
-                            ${evaluateButton}
-                            ${timelineButton}
-                        </div>
-                    </td>
-                `;
+                        <td>${new Date(item.createdAtUtc).toLocaleString()}</td>
+                        <td>${item.title}</td>
+                        <td>${item.location}</td>
+                        <td class="${item.priority}">${item.priority}</td>
+                        <td class="${item.status}">${item.status}</td>
+                        <td>
+                            <div class="action-group">
+                                ${evaluateButton}
+                                ${timelineButton}
+                            </div>
+                        </td>
+                    `;
                 rows.appendChild(tr);
             }
 
