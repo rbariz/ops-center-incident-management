@@ -2,6 +2,7 @@
 using OpsCenterIncidentManagement.Application.UseCases.EvaluateIncidentEscalation;
 using OpsCenterIncidentManagement.Application.UseCases.GetIncidents;
 using OpsCenterIncidentManagement.Application.UseCases.GetIncidentTimeline;
+using OpsCenterIncidentManagement.Application.UseCases.GetOpsDashboard;
 
 namespace OpsCenterIncidentManagement.Application.DependencyInjection;
 
@@ -12,6 +13,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<EvaluateIncidentEscalationHandler>(); 
         services.AddScoped<GetIncidentsHandler>();
         services.AddScoped<GetIncidentTimelineHandler>();
+        services.AddScoped<GetOpsDashboardHandler>();
         return services;
     }
 }

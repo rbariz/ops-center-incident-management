@@ -1,0 +1,247 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Ops Center Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 24px;
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 8px 24px rgba(15,23,42,.06);
+        }
+
+        .label {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .value {
+            font-size: 30px;
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border: 1px solid #e2e8f0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f1f5f9;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #475569;
+        }
+
+        button, a.btn {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 10px;
+            background: #2563eb;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .created {
+            color: #334155;
+            font-weight: 700;
+        }
+
+        .assigned {
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
+        .inprogress {
+            color: #0f766e;
+            font-weight: 700;
+        }
+
+        .escalated {
+            color: #991b1b;
+            font-weight: 700;
+        }
+
+        .resolved {
+            color: #166534;
+            font-weight: 700;
+        }
+
+        .closed {
+            color: #475569;
+            font-weight: 700;
+        }
+
+        .critical {
+            color: #991b1b;
+            font-weight: 700;
+        }
+
+        .high {
+            color: #b45309;
+            font-weight: 700;
+        }
+
+        .medium {
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
+        .low {
+            color: #166534;
+            font-weight: 700;
+        }
+
+        .muted {
+            color: #64748b;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ops Center Dashboard</h1>
+    <div class="muted">Minimal demo for incidents, escalation evaluation, and timeline visibility.</div>
+
+    <div class="toolbar">
+        <button onclick="loadDashboard()">Refresh</button>
+        <a id="timelineLink" class="btn btn-secondary" href="#" target="_blank">Open Demo Timeline</a>
+        <div id="lastRefresh" class="muted">Last refresh: -</div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="label">Demo Incident</div>
+            <div id="incidentId" class="value" style="font-size:16px">-</div>
+        </div>
+        <div class="card">
+            <div class="label">Total Incidents</div>
+            <div id="totalIncidents" class="value">0</div>
+        </div>
+        <div class="card">
+            <div class="label">Escalated Incidents</div>
+            <div id="escalatedIncidents" class="value">0</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Latest Incidents</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Created</th>
+                    <th>Title</th>
+                    <th>Location</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="incidentRows"></tbody>
+        </table>
+    </div>
+
+    <script>
+        let demoIncidentId = null;
+
+        async function loadDashboard() {
+            const response = await fetch('/api/ops-dashboard');
+            const data = await response.json();
+
+            demoIncidentId = data.demoIncidentId;
+
+            document.getElementById('incidentId').textContent = demoIncidentId;
+            document.getElementById('totalIncidents').textContent = data.totalIncidents;
+            document.getElementById('escalatedIncidents').textContent = data.escalatedIncidents;
+            document.getElementById('timelineLink').href = `/api/incidents/${demoIncidentId}/timeline`;
+
+            const rows = document.getElementById('incidentRows');
+            rows.innerHTML = '';
+
+            for (const item of data.latestIncidents) {
+                const evaluateButton =
+                    (item.status !== 'resolved' && item.status !== 'closed' && item.status !== 'cancelled')
+                        ? `<button onclick="evaluateEscalation('${item.id}')">Evaluate Escalation</button>`
+                        : '';
+
+                const timelineButton =
+                    `<a class="btn btn-secondary" href="/api/incidents/${item.id}/timeline" target="_blank">Timeline</a>`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${new Date(item.createdAtUtc).toLocaleString()}</td>
+                    <td>${item.title}</td>
+                    <td>${item.location}</td>
+                    <td class="${item.priority}">${item.priority}</td>
+                    <td class="${item.status}">${item.status}</td>
+                    <td>
+                        <div class="action-group">
+                            ${evaluateButton}
+                            ${timelineButton}
+                        </div>
+                    </td>
+                `;
+                rows.appendChild(tr);
+            }
+
+            document.getElementById('lastRefresh').textContent =
+                'Last refresh: ' + new Date().toLocaleString();
+        }
+
+        async function evaluateEscalation(incidentId) {
+            await fetch(`/api/incidents/${incidentId}/evaluate-escalation`, { method: 'POST' });
+            await loadDashboard();
+        }
+
+        loadDashboard();
+        setInterval(loadDashboard, 5000);
+    </script>
+</body>
+</html>
