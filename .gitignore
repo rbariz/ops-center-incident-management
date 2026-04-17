@@ -1,0 +1,32 @@
+# Build folders
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VSCode
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test results
+TestResults/
+
+# NuGet
+*.nupkg
+packages/
+
+# Local config (IMPORTANT)
+appsettings.Development.json
+appsettings.Local.json
